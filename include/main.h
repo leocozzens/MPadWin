@@ -3,6 +3,11 @@
 
 #include <windows.h>
 
+typedef struct {
+    HWND hEdit;
+    HFONT hFont;
+} WindowData;
+
 #define IDM_EDIT 1002
 
 // File submenu ID's

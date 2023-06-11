@@ -1,20 +1,19 @@
-#include <minPadWin.h>
-
-HWND hEdit;
+#include <main.h>
 
 // Window procedure
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    static WindowData *windowData = NULL;
     switch (uMsg)
     {
         case WM_SIZE: // When window is resized invalidate current window background so paint is called
         {
-            MoveWindow(hEdit, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+            MoveWindow(windowData->hEdit, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
             return 0;
         }
         case WM_CREATE: // When repaint is called execute the following actions tot he window background
         {
-            hEdit = CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_AUTOVSCROLL,
+            HWND hEdit = CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_AUTOVSCROLL,
                 0, 0, 0, 0, hWnd, NULL, NULL, NULL);
 
             HFONT hFont = CreateFontW(
@@ -33,7 +32,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 DEFAULT_PITCH | FF_DONTCARE,// Pitch and family
                 L"Arial"                    // Font name
             );
-            SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
+
+            if (windowData == NULL) {
+                windowData = malloc(sizeof(WindowData));
+                windowData->hEdit = hEdit;
+                windowData->hFont = hFont;
+            }
+            SendMessage(windowData->hEdit, WM_SETFONT, (WPARAM)windowData->hFont, TRUE);
             break;
         }
 
@@ -64,6 +69,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_DESTROY:
         {
+            // Cleanup
+            windowData = NULL;
+            free(windowData);
+
             PostQuitMessage(0);
             return 0;
         }
